@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Person, Team, MONTHS, SHIRT_SIZES, Stanowisko, Osoba
+from datetime import date
 
 
 class PersonSerializer(serializers.Serializer):
@@ -23,7 +24,7 @@ class PersonSerializer(serializers.Serializer):
     team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
     
     pseudonim = serializers.CharField(required = False)
-
+    
     def validate_name(self, value):
 
         if not value.istitle():
@@ -31,7 +32,7 @@ class PersonSerializer(serializers.Serializer):
                 "Nazwa osoby powinna rozpoczynać się wielką literą!",
             )
         return value
-    
+
     # przesłonięcie metody create() z klasy serializers.Serializer
     def create(self, validated_data):
         return Person.objects.create(**validated_data)
@@ -58,6 +59,7 @@ class PersonSerializer(serializers.Serializer):
 #         read_only_fields = ['id']
 
 class StanowiskoSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     nazwa = serializers.CharField(max_length = 80)
     opis = serializers.CharField()
     
@@ -77,8 +79,23 @@ class TeamSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
     
 class OsobaSerializer(serializers.ModelSerializer):
+    def validate_imie(self, value):
+        if not value.isalpha():
+            raise serializers.ValidationError("Pole 'imie' musi zawierać tylko litery!!!")
+        return value
+    
+    def validate_nazwisko(self, value):
+        if not value.isalpha():
+            raise serializers.ValidationError("Pole 'nazwisko' musi zawierać tylko litery!!!")
+        return value
+    
+    def validate_data_dodania(self, value):
+        if value > date.today():
+            raise serializers.ValidationError("Pole 'data_dodania' nie może być z przyszłości!!!")
+        return value
+    
     class Meta:
         model = Osoba
         fields = ['id', 'imie', 'nazwisko','plec', 'stanowisko', 'data_dodania']
-        read_only_fields = ['id', 'data_dodania']
+        read_only_fields = ['id']
     
