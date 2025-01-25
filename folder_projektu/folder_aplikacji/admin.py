@@ -7,6 +7,7 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ['name', 'shirt_size', 'team']
     list_filter = ['team']
 
+
 # ten obiekt też trzeba zarejestrować w module admin
 admin.site.register(Person, PersonAdmin)
 class StanowiskoAdmin(admin.ModelAdmin):
