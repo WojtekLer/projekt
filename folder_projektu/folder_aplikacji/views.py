@@ -23,7 +23,7 @@ class LogoutView(APIView):
 
 # określamy dostępne metody żądania dla tego endpointu
 @api_view(['GET'])
-def person_list(request):
+def person_list(request): # Zwraca listę wszystkich obiektów Person
     """
     Lista wszystkich obiektów modelu Person.
     """
@@ -36,7 +36,8 @@ def person_list(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def person_detail(request, pk):
+def person_detail(request, pk): # Zwraca szczegóły jednego obiektu Person, 
+    # Pobiera obiekt Person na podstawie pk
 
     """
     :param request: obiekt DRF Request
@@ -63,7 +64,8 @@ def person_detail(request, pk):
 @api_view(['PUT'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
-def person_update(request, pk):
+def person_update(request, pk): # Aktualizuje obiekt Person.
+    # Pobiera obiekt Person na podstawie pk i Sprawdza poprawność danych za pomocą PersonSerializer
 
     """
     :param request: obiekt DRF Request
@@ -75,7 +77,7 @@ def person_update(request, pk):
     except Person.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'PUT':
+    if request.method == 'PUT': 
         serializer = PersonSerializer(person, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -85,9 +87,9 @@ def person_update(request, pk):
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])    
-def person_delete(request, pk):
+def person_delete(request, pk): # Usuwa obiekt Person
     try:
-        person = Person.objects.get(pk=pk)
+        person = Person.objects.get(pk=pk) # Pobranie obiektu Person o podanym id
     except Person.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -98,15 +100,17 @@ def person_delete(request, pk):
 @api_view(['GET', 'POST']) 
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])   
-def osoba_list(request):
-    if request.method == "GET":
+def osoba_list(request): # Zwraca listę wszystkich obiektów Osoba
+    if request.method == "GET": #GET: Filtruje dane w zależności od uprawnień użytkownika. 
+        # Serializuje dane i zwraca listę.
         if not request.user.has_perm("folder_aplikacji.view_person_other_owner"):
             osoby = Osoba.objects.filter(wlasciciel = request.user)
         else:
             osoby = Osoba.objects.all()
         serializer = OsobaSerializer(osoby, many = True)
         return Response(serializer.data)
-    if request.method == 'POST':
+    if request.method == 'POST': # Tworzy nowy obiekt Osoba przypisany do zalogowanego użytkownika.
+    # Sprawdza poprawność danych i zwraca odpowiedź.
         serializer = OsobaSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(wlasciciel = request.user)
@@ -114,33 +118,33 @@ def osoba_list(request):
         return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET','DELETE'])    
-def osoba_details(request, pk):
+def osoba_details(request, pk): # Zwraca szczegóły jednego obiektu Osoba
     try:
         osoba = Osoba.objects.get(pk=pk)
     except Osoba.DoesNotExist:
         return Response(status = status.HTTP_404_NOT_FOUND)
     
-    if request.method == "GET":
+    if request.method == "GET": # GET: Serializuje dane i zwraca je.
         serializer = OsobaSerializer(osoba)
         return Response(serializer.data)
-    elif request.method == "DELETE":
+    elif request.method == "DELETE": # Usuwa obiekt i zwraca status 204
         osoba.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
     
-@api_view(['GET'])
-def osoba_search(request, substring):
+@api_view(['GET']) # Filtruje dane za pomocą icontains i zwraca listę obiektów Osoba
+def osoba_search(request, substring): # Wyszukuje obiektów Osoba po imieniu lub nazwisku
     osoby = Osoba.objects.filter(imie__icontains = substring) | Osoba.objects.filter(nazwisko__icontains = substring)
     serializer = OsobaSerializer(osoby, many = True)
     return Response(serializer.data)
 
 @api_view(['GET', 'POST'])
-def stanowisko_list(request):
-    if request.method == 'GET':
+def stanowisko_list(request): # Zwraca listę wszystkich obiektów Stanowisko
+    if request.method == 'GET': # Pobiera wszystkie obiekty Stanowisko
         stanowiska = Stanowisko.objects.all()
         serializer = StanowiskoSerializer(stanowiska, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
+    elif request.method == 'POST': # Tworzy nowy obiekt Stanowisko. Waliduje dane i zapisuje obiekt
         serializer = StanowiskoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -148,7 +152,7 @@ def stanowisko_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET', 'DELETE'])
-def stanowisko_detail(request, pk):
+def stanowisko_detail(request, pk): # Zwraca szczegóły jednego obiektu Stanowisko
     try:
         stanowisko = Stanowisko.objects.get(pk=pk)
     except Stanowisko.DoesNotExist:
@@ -161,7 +165,7 @@ def stanowisko_detail(request, pk):
         stanowisko.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-def welcome_view(request):
+def welcome_view(request): # Zwraca prostą stronę HTML z datą i czasem serwera, widok powitalny
     now = datetime.datetime.now()
     html = f"""
         <html><body>
@@ -172,15 +176,15 @@ def welcome_view(request):
 
 @login_required
 @permission_required('folder_aplikacji.view_person')
-def person_list_html(request):
+def person_list_html(request): # Renderuje szablon HTML z listą obiektów
     # pobieramy wszystkie obiekty Person z bazy poprzez QuerySet
     persons = Person.objects.all()
     return render(request,
                   "folder_aplikacji/person/list.html",
                   {'persons': persons})
     
-def person_detail_html(request, id):
-    # pobieramy konkretny obiekt Person
+def person_detail_html(request, id): # Zwraca szczegóły obiektu Person w formie strony HTML
+    # Jeśli obiekt nie istnieje, zwraca błąd 404
     try:
         person = Person.objects.get(id=id)
     except Person.DoesNotExist:
@@ -190,7 +194,7 @@ def person_detail_html(request, id):
                   "folder_aplikacji/person/detail.html",
                   {'person': person})
     
-class StanowiskoMemberView(APIView):
+class StanowiskoMemberView(APIView): # Zwraca listę osób przypisanych do danego stanowiska
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
@@ -204,7 +208,7 @@ class StanowiskoMemberView(APIView):
         serializer = OsobaSerializer(osoby, many = True)
         return Response(serializer.data)
     
-class TeamDetail(APIView):
+class TeamDetail(APIView): # Zwraca szczegóły jednego obiektu Team
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated, CustomDjangoModelPermissions]
 

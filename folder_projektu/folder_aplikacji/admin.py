@@ -1,11 +1,15 @@
 from django.contrib import admin
 from .models import Team, Person, Osoba, Stanowisko
 
-admin.site.register(Team)
+# Rejestruje model x z konfiguracją xAdmin
+# Klasa PersonAdmin dostosowuje widok modelu Person w panelu administracyjnym
+admin.site.register(Team) # Team Prosty widok w panelu administracyjnym
 class PersonAdmin(admin.ModelAdmin):
-    # zmienna list_display przechowuje listę pól, które mają się wyświetlać w widoku listy danego modelu w panelu administracynym
+    # list_display: Lista pól, które będą wyświetlane w widoku listy obiektów modelu Person. 
+    # Dodaje możliwość filtrowania obiektów
     list_display = ['name', 'shirt_size', 'team']
     list_filter = ['team']
+
 
 # ten obiekt też trzeba zarejestrować w module admin
 admin.site.register(Person, PersonAdmin)

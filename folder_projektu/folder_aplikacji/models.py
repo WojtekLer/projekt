@@ -2,7 +2,7 @@ from django.db import models
 from datetime import date
 from django.contrib.auth.models import User
 
-# deklaracja statycznej listy wyboru do wykorzystania w klasie modelu
+# ista wyboru, która przypisuje liczby do nazw miesięcy (np. 1 = Styczeń, 2 = Luty, itd.).
 MONTHS = models.IntegerChoices('Miesiace', 'Styczeń Luty Marzec Kwiecień Maj Czerwiec Lipiec Sierpień Wrzesień Październik Listopad Grudzień')
 
 PLCIE = models.IntegerChoices('PLEC', 'Kobieta Mężczyzna Inna')
@@ -14,12 +14,12 @@ SHIRT_SIZES = (
         ('L', 'Large'),
     )
 
-
+# Reprezentuje drużynę, z dwoma polami name i country
 class Team(models.Model):
     name = models.CharField(max_length=60)
     country = models.CharField(max_length=2)
 
-    def __str__(self):
+    def __str__(self): # Metoda __str__: Zwraca nazwę drużyny jako reprezentację obiektu.
         return f"{self.name}"
 
 
@@ -50,15 +50,15 @@ class Osoba(models.Model):
     def __str__(self):
         return f'{self.imie} {self.nazwisko}' 
     
-    class Meta:
-        ordering = ["nazwisko"]
+    class Meta: # Klasa Meta
+        ordering = ["nazwisko"] # Sortuje obiekty modelu Osoba po nazwisku
         permissions = [
             ("view_person_other_owner", "Pozwala zobaczyć modele Osoba innych właścicieli"),
-        ]
+        ] # Dodaje uprawnienie view_person_other_owner, które pozwala na zobaczenie modeli Osoba innych właścicieli
 
-class Stanowisko(models.Model):
+class Stanowisko(models.Model): # Model Stanowisko
     nazwa = models.CharField(max_length=80, blank = False, null = False)
-    opis = models.TextField(blank = False, null = False)
+    opis = models.TextField(blank = False, null = False) 
     
     def __str__(self):
         return self.nazwa

@@ -2,8 +2,9 @@ from rest_framework import serializers
 from .models import Person, Team, MONTHS, SHIRT_SIZES, Stanowisko, Osoba
 from datetime import date
 
-
-class PersonSerializer(serializers.Serializer):
+# Serializer-y są odpowiedzialne za konwersję danych między typami Python 
+# (np. obiektami modelu) a formatami takich jak JSON.
+class PersonSerializer(serializers.Serializer): # ręczny serializer
 
     # pole tylko do odczytu, tutaj dla id działa też autoincrement
     id = serializers.IntegerField(read_only=True)
@@ -15,8 +16,8 @@ class PersonSerializer(serializers.Serializer):
     # zwróć uwagę na zapisywaną wartość do bazy dla default={wybór}[0] oraz default={wybór}[0][0]
     # w pliku models.py SHIRT_SIZES oraz MONTHS zostały wyniesione jako stałe do poziomu zmiennych skryptu
     # (nie wewnątrz modelu)
-    shirt_size = serializers.ChoiceField(choices=SHIRT_SIZES, default=SHIRT_SIZES[0][0])
-    month_added = serializers.ChoiceField(choices=MONTHS.choices, default=MONTHS.choices[0][0])
+    shirt_size = serializers.ChoiceField(choices=SHIRT_SIZES, default=SHIRT_SIZES[0][0]) 
+    month_added = serializers.ChoiceField(choices=MONTHS.choices, default=MONTHS.choices[0][0]) #
 
     # odzwierciedlenie pola w postaci klucza obcego
     # przy dodawaniu nowego obiektu możemy odwołać się do istniejącego poprzez inicjalizację nowego obiektu
@@ -25,17 +26,17 @@ class PersonSerializer(serializers.Serializer):
     
     pseudonim = serializers.CharField(required = False)
     
-    def validate_name(self, value):
+    def validate_name(self, value): # metoda validate_{nazwa_pola}() sprawdza poprawność wartości pola
 
-        if not value.istitle():
+        if not value.istitle(): # sprawdzenie czy wartość pola zaczyna się wielką literą
             raise serializers.ValidationError(
                 "Nazwa osoby powinna rozpoczynać się wielką literą!",
             )
         return value
 
     # przesłonięcie metody create() z klasy serializers.Serializer
-    def create(self, validated_data):
-        return Person.objects.create(**validated_data)
+    def create(self, validated_data): 
+        return Person.objects.create(**validated_data) # utworzenie nowego obiektu klasy Person z przekazanymi danymi
 
     # przesłonięcie metody update() z klasy serializers.Serializer
     def update(self, instance, validated_data):
@@ -43,9 +44,9 @@ class PersonSerializer(serializers.Serializer):
         instance.shirt_size = validated_data.get('shirt_size', instance.shirt_size)
         instance.month_added = validated_data.get('month_added', instance.month_added)
         instance.team = validated_data.get('team', instance.team)
-        instance.pseudonim = validated_data.get('pseudonim', instance.pseudonim)
-        instance.save()
-        return instance
+        instance.pseudonim = validated_data.get('pseudonim', instance.pseudonim) 
+        instance.save() 
+        return instance 
     
     
 # class PersonModelSerializer(serializers.ModelSerializer):
@@ -58,7 +59,7 @@ class PersonSerializer(serializers.Serializer):
 #         # definicja pola modelu tylko do odczytu
 #         read_only_fields = ['id']
 
-class StanowiskoSerializer(serializers.Serializer):
+class StanowiskoSerializer(serializers.Serializer): # ręczny serializer
     id = serializers.IntegerField(read_only=True)
     nazwa = serializers.CharField(max_length = 80)
     opis = serializers.CharField()
@@ -72,13 +73,13 @@ class StanowiskoSerializer(serializers.Serializer):
         instance.save()
         return instance
     
-class TeamSerializer(serializers.ModelSerializer):
+class TeamSerializer(serializers.ModelSerializer): # ModelSerializer Automatyzują tworzenie pól i metod
     class Meta:
         model = Team
         fields = ['id', 'name', 'country']
         read_only_fields = ['id']
     
-class OsobaSerializer(serializers.ModelSerializer):
+class OsobaSerializer(serializers.ModelSerializer): # ModelSerializer Automatyzują tworzenie pól i metod
     def validate_imie(self, value):
         if not value.isalpha():
             raise serializers.ValidationError("Pole 'imie' musi zawierać tylko litery!!!")
